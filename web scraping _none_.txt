@@ -1,0 +1,73 @@
+#en primer lugar vamos a instalar diferentes librerías que nos serviran para la extracción de información de Twitter
+
+install.packages("ROAuth");
+install.packages("base64enc");
+install.packages("twitteR");
+install.packages("streamR");
+install.packages("rjson");
+install.packages("bitops");
+install.packages("RCurl");
+
+#y cargamos las librerias
+library("ROAuth");
+library("base64enc");
+library("twitteR");
+library("streamR");
+library("rjson");
+library("bitops");
+library("RCurl");
+
+
+#ahora comenzamos con la configuración necesaria
+#en primer lugar los parametros
+
+reqURL <- "https://api.twitter.com/oauth/request_token"
+accessURL <- "https://api.twitter.com/oauth/access_token"
+authURL <- "https://api.twitter.com/oauth/authorize"
+options(httr_oauth_cache=T)
+
+#y las credenciales
+consumer_key <- "xxxxx"
+consumer_secret <-"xxxxx"
+access_token <-"xxxxx"
+access_secret <-"xxxxx"
+
+# ya podemos ejecutar Twitter
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+# streamR 
+credentials_file <- "my_oauth.Rdata"
+if (file.exists(credentials_file)){
+load(credentials_file)
+} else {
+cred <- OAuthFactory$new(consumerKey = consumer_key, consumerSecret =
+consumer_secret, requestURL = reqURL, accessURL = accessURL, authURL = authURL)
+cred$handshake(cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl"))
+save(cred, file = credentials_file)
+}
+
+#este fichero lo guardaremos como credenciasles.r para su utilizacion posterior en la extraccion de informacion de twitter
+
+#leemos el fichero de credenciales
+source('credenciales.R')
+
+
+#extraemos la informacion que buscamos,el total de tweets y el espacion temporal
+rstats<-searchTwitter(c("#kendo","#AJKC","#ajkendof","#martialarts","#japan"), n=9999, since='2017-10-01')
+datos <- do.call("rbind", lapply(rstats, as.data.frame))
+names(datos)
+
+
+##exportamos los datos
+write.csv2(datos, file = 'salida.csv')
+
+
+
+
+
+
+
+
+
+
+
